@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sidebar Scroll-Edge Blur — AppKit Reference</title>
+<style>
+  :root{
+    --bg: #17181b;
+    --surface: #1f2124;
+    --surface-raised: #262931;
+    --hairline: #34373d;
+    --text: #e8e9eb;
+    --text-dim: #969ba3;
+    --text-dimmer: #6d7178;
+    --accent: #5fc4d0;
+    --accent-dim: #3d7c84;
+    --ok: #6bb98a;
+    --ok-bg: rgba(107,185,138,0.12);
+    --no: #d9954a;
+    --no-bg: rgba(217,149,74,0.12);
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.6;
+    font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent-dim); color:#fff; }
+  a{ color:var(--accent); }
+  .page{
+    max-width:800px;
+    margin:0 auto;
+    padding:56px 28px 96px;
+  }
+  header.hero{
+    margin-bottom:40px;
+    padding-bottom:32px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 14px;
+  }
+  h1{
+    font-size:clamp(28px,4vw,36px);
+    font-weight:680;
+    letter-spacing:-0.02em;
+    margin:0 0 14px;
+    text-wrap:balance;
+    color:#fff;
+  }
+  .lede{
+    font-size:17px;
+    color:var(--text-dim);
+    max-width:64ch;
+    margin:0;
+  }
+  h2{
+    font-size:22px;
+    font-weight:650;
+    letter-spacing:-0.01em;
+    color:#fff;
+    margin:0 0 6px;
+    text-wrap:balance;
+  }
+  h3{
+    font-size:15px;
+    font-weight:650;
+    color:var(--text);
+    margin:0 0 10px;
+  }
+  .section-label{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--text-dimmer);
+    margin:0 0 8px;
+  }
+  section{ margin-bottom:52px; }
+  section > p{ color:var(--text-dim); max-width:66ch; }
+  code, .mono{ font-family:var(--mono); font-size:0.92em; }
+  code{
+    background:var(--surface-raised);
+    border:1px solid var(--hairline);
+    border-radius:4px;
+    padding:0.1em 0.4em;
+    color:#f0c987;
+  }
+  pre{
+    background:var(--surface);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:16px 18px;
+    overflow-x:auto;
+    margin:0 0 4px;
+  }
+  pre code{
+    background:none;
+    border:none;
+    padding:0;
+    color:var(--text);
+    font-size:13px;
+    line-height:1.55;
+  }
+  .quote{
+    border-left:2px solid var(--accent-dim);
+    padding:2px 0 2px 16px;
+    color:var(--text-dim);
+    font-size:14px;
+    font-style:italic;
+    margin:12px 0;
+  }
+  .quote cite{
+    display:block;
+    font-style:normal;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-dimmer);
+    margin-top:6px;
+  }
+
+  /* environment table */
+  .env-table{
+    display:grid;
+    grid-template-columns:max-content 1fr;
+    gap:6px 24px;
+    font-family:var(--mono);
+    font-size:13.5px;
+  }
+  .env-table dt{ color:var(--text-dimmer); }
+  .env-table dd{ margin:0; color:var(--text); }
+
+  /* generic param tables */
+  .tblwrap{ overflow-x:auto; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+  }
+  th{
+    text-align:left;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--text-dimmer);
+    font-weight:600;
+    padding:0 12px 8px 0;
+    border-bottom:1px solid var(--hairline);
+  }
+  td{
+    padding:9px 12px 9px 0;
+    border-bottom:1px solid var(--hairline);
+    vertical-align:top;
+    color:var(--text-dim);
+  }
+  td.param, td code{ color:var(--text); }
+  td:first-child, th:first-child{ white-space:nowrap; }
+  tr:last-child td{ border-bottom:none; }
+  .num{ font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--text); }
+
+  /* hierarchy tree */
+  .tree{ position:relative; }
+  .node{
+    position:relative;
+    margin-left:0;
+    padding-left:22px;
+    border-left:1px solid var(--hairline);
+    margin-bottom:0;
+  }
+  .node.root{ border-left:none; padding-left:0; }
+  .node > .card{
+    background:var(--surface);
+    border:1px solid var(--hairline);
+    border-radius:10px;
+    padding:16px 18px;
+    margin:0 0 16px;
+    position:relative;
+  }
+  .node > .card::before{
+    content:"";
+    position:absolute;
+    left:-22px;
+    top:24px;
+    width:16px;
+    height:1px;
+    background:var(--hairline);
+  }
+  .node.root > .card::before{ display:none; }
+  .card-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:4px;
+  }
+  .card-title{
+    font-family:var(--mono);
+    font-size:14.5px;
+    font-weight:600;
+    color:#fff;
+  }
+  .badge{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    padding:3px 8px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .badge.ok{ background:var(--ok-bg); color:var(--ok); }
+  .badge.no{ background:var(--no-bg); color:var(--no); }
+  .card-desc{
+    color:var(--text-dim);
+    font-size:13.5px;
+    margin:4px 0 12px;
+    max-width:60ch;
+  }
+  .card details{ margin-top:2px; }
+  .card summary{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--accent);
+    cursor:pointer;
+    margin-bottom:10px;
+  }
+  .children{ margin-left:8px; }
+
+  .diag-line{
+    display:block;
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--text-dim);
+    padding:2px 0;
+  }
+  .diag-line .k{ color:var(--text-dimmer); }
+  .diag-line .v{ color:var(--accent); }
+
+  .question-box{
+    background:var(--surface);
+    border:1px solid var(--accent-dim);
+    border-radius:10px;
+    padding:22px 24px;
+  }
+  .question-box p{ color:var(--text); }
+  .question-box p:last-child{ margin-bottom:0; }
+  ul.app-list{
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin:0 0 16px;
+    padding:0 0 0 32px;
+  }
+  ul.app-list li{
+    position:relative;
+    padding-left:20px;
+    color:var(--text);
+    font-family:var(--mono);
+    font-size:14px;
+  }
+  ul.app-list li::before{
+    content:"";
+    position:absolute;
+    left:2px;
+    top:0.55em;
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--accent);
+  }
+
+  footer{
+    margin-top:64px;
+    padding-top:24px;
+    border-top:1px solid var(--hairline);
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--text-dimmer);
+  }
+
+  @media (max-width:480px){
+    .page{ padding:36px 18px 72px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="hero">
+    <p class="eyebrow">AppKit · macOS 26 Tahoe · Liquid Glass</p>
+    <h1>Scroll-edge blur renders under the content pane's toolbar, but not under the sidebar's traffic lights</h1>
+    <p class="lede">
+      Full API hierarchy and exact configuration for a native <code>NSSplitViewController</code>
+      settings window, built to reproduce the question before posting it to the forums:
+      why does <code>NSSplitViewItemAccessoryViewController.preferredScrollEdgeEffectStyle</code>
+      work for a plain content split item but never render for a <code>.sidebar</code>-behavior
+      split item, even though the safe-area math is identical between the two?
+    </p>
+  </header>
+
+  <section>
+    <p class="section-label">Environment</p>
+    <dl class="env-table">
+      <dt>OS</dt><dd>macOS 26.5.1 “Tahoe” (GA)</dd>
+      <dt>SDK</dt><dd>MacOSX26.5.sdk</dd>
+      <dt>Swift</dt><dd>6.3.2, language mode .v6 (strict concurrency)</dd>
+      <dt>Deployment target</dt><dd>.macOS("26.1") — required minimum for <code>preferredScrollEdgeEffectStyle</code></dd>
+      <dt>Window type</dt><dd>NSSplitViewController-based settings window, 2 panes (sidebar + content)</dd>
+    </dl>
+  </section>
+
+  <section>
+    <p class="section-label">01 — View hierarchy, root to leaf</p>
+    <h2>Every class in the chain, with the exact parameters set on each</h2>
+    <p>
+      Nesting below mirrors real view-hierarchy depth. The sidebar branch (accessory blur:
+      <strong style="color:var(--no)">absent</strong>) and the content branch (accessory blur:
+      <strong style="color:var(--ok)">present</strong>) are configured identically at every
+      level that differs only in scope — that parity is the actual question.
+    </p>
+
+    <div class="tree">
+
+      <div class="node root">
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">NSWindow</span>
+          </div>
+          <p class="card-desc">Borderless-titlebar host window. Owns the one shared <code>NSToolbar</code> and the top-level <code>NSSplitViewController</code>.</p>
+          <div class="tblwrap">
+            <table>
+              <tr><th>Property</th><th>Value</th></tr>
+              <tr><td class="param">styleMask</td><td><code>[.titled, .closable, .resizable, .fullSizeContentView]</code></td></tr>
+              <tr><td class="param">titlebarAppearsTransparent</td><td><code>true</code></td></tr>
+              <tr><td class="param">titleVisibility</td><td><code>.visible</code></td></tr>
+              <tr><td class="param">titlebarSeparatorStyle</td><td><code>.none</code></td></tr>
+              <tr><td class="param">toolbarStyle</td><td><code>.unified</code></td></tr>
+              <tr><td class="param">contentMinSize / contentMaxSize</td><td><span class="num">588×412</span> min, width locked, height free</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="children">
+
+          <div class="node">
+            <div class="card">
+              <div class="card-head"><span class="card-title">NSToolbar</span></div>
+              <p class="card-desc">Zero items — exists purely to obtain the unified Tahoe glass chrome (larger corner radius, the real "toolbarClearance" safe-area contribution content relies on).</p>
+              <div class="tblwrap">
+                <table>
+                  <tr><th>Property</th><th>Value</th></tr>
+                  <tr><td class="param">identifier</td><td><code>"SettingsWindowToolbar"</code></td></tr>
+                  <tr><td class="param">allowsUserCustomization</td><td><code>false</code></td></tr>
+                  <tr><td class="param">displayMode</td><td><code>.iconOnly</code></td></tr>
+                  <tr><td class="param">toolbarDefaultItemIdentifiers</td><td><code>[]</code></td></tr>
+                  <tr><td class="param">toolbarAllowedItemIdentifiers</td><td><code>[]</code></td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="node">
+            <div class="card">
+              <div class="card-head"><span class="card-title">NSSplitViewController → NSSplitView</span></div>
+              <p class="card-desc">Assigned as <code>window.contentViewController</code>. Two split view items, vertical orientation.</p>
+              <div class="tblwrap">
+                <table>
+                  <tr><th>Property</th><th>Value</th></tr>
+                  <tr><td class="param">splitView.isVertical</td><td><code>true</code></td></tr>
+                  <tr><td class="param">splitViewItems</td><td><code>[sidebarItem, contentItem]</code></td></tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="children">
+
+              <!-- SIDEBAR BRANCH -->
+              <div class="node">
+                <div class="card">
+                  <div class="card-head">
+                    <span class="card-title">NSSplitViewItem <span style="color:var(--text-dimmer)">(sidebar)</span></span>
+                    <span class="badge no">no blur</span>
+                  </div>
+                  <p class="card-desc">
+                    Created via <code>NSSplitViewItem(sidebarWithViewController:)</code> —
+                    sets <code>behavior = .sidebar</code> internally. Per <code>NSSplitViewItem.h</code>,
+                    this convenience initializer already sets:
+                  </p>
+                  <div class="quote">
+                    Sidebars have standard system behavior: translucent material background · collapse/uncollapse
+                    on split view size changes · overlay at small split view sizes in fullscreen · canCollapse = YES ·
+                    min/maxThickness = standard sidebar size · preferredThicknessFraction = 0.15 · springLoaded = YES
+                    <cite>NSSplitViewItem.h — sidebarWithViewController: doc comment</cite>
+                  </div>
+                  <div class="tblwrap">
+                    <table>
+                      <tr><th>Property</th><th>Value</th></tr>
+                      <tr><td class="param">allowsFullHeightLayout</td><td><code>true</code> (explicit; already default for sidebars)</td></tr>
+                      <tr><td class="param">canCollapse</td><td><code>false</code> (overrides the sidebar default of <code>true</code>)</td></tr>
+                      <tr><td class="param">minimumThickness / maximumThickness</td><td><span class="num">160 / 160</span> (locks width, overrides standard sidebar range)</td></tr>
+                      <tr><td class="param">topAlignedAccessoryViewControllers</td><td><code>[sidebarScrollEdgeEffectAccessory]</code></td></tr>
+                      <tr><td class="param">automaticallyAdjustsSafeAreaInsets</td><td>not set (default <code>false</code>) — tested <code>true</code>, no change (see Experiment 3)</td></tr>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="children">
+
+                  <div class="node">
+                    <div class="card">
+                      <div class="card-head">
+                        <span class="card-title">NSSplitViewItemAccessoryViewController</span>
+                        <span class="badge no">no blur</span>
+                      </div>
+                      <p class="card-desc">Top-aligned on the sidebar item via <code>addTopAlignedAccessoryViewController(_:)</code>. Invisible — an empty, height-constrained <code>NSView</code>.</p>
+                      <div class="tblwrap">
+                        <table>
+                          <tr><th>Property</th><th>Value</th></tr>
+                          <tr><td class="param">view</td><td>plain <code>NSView</code>, height-constrained only</td></tr>
+                          <tr><td class="param">view height constraint</td><td><span class="num">2pt</span> (tested up to <span class="num">20pt</span> — no change in outcome)</td></tr>
+                          <tr><td class="param">automaticallyAppliesContentInsets</td><td><code>false</code></td></tr>
+                          <tr><td class="param">preferredScrollEdgeEffectStyle</td><td><code>.soft</code> — macOS 26.1, <code>NSScrollEdgeEffectStyle.softStyle</code></td></tr>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="node">
+                    <div class="card">
+                      <div class="card-head"><span class="card-title">NSViewController (plain container)</span></div>
+                      <p class="card-desc">The sidebar item's own <code>viewController</code>. <code>view</code> is a bare <code>NSView</code> — deliberately no <code>NSVisualEffectView</code> of our own, so the system's automatic Tahoe sidebar glass material shows through underneath.</p>
+                    </div>
+
+                    <div class="children">
+                      <div class="node">
+                        <div class="card">
+                          <div class="card-head"><span class="card-title">NSScrollView (sidebar)</span></div>
+                          <p class="card-desc">Wraps the nav table. Pinned full-bleed to the container's literal top edge (not offset below the traffic lights) so rows can actually scroll into that zone.</p>
+                          <div class="tblwrap">
+                            <table>
+                              <tr><th>Property</th><th>Value</th></tr>
+                              <tr><td class="param">hasVerticalScroller / hasHorizontalScroller</td><td><code>false</code> / <code>false</code></td></tr>
+                              <tr><td class="param">horizontalScrollElasticity</td><td><code>.none</code></td></tr>
+                              <tr><td class="param">drawsBackground</td><td><code>false</code></td></tr>
+                              <tr><td class="param">automaticallyAdjustsContentInsets</td><td><code>true</code></td></tr>
+                              <tr><td class="param">top/bottom/leading/trailing anchors</td><td>all four pinned flush to the container's edges</td></tr>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div class="children">
+                          <div class="node">
+                            <div class="card">
+                              <div class="card-head"><span class="card-title">NSTableView</span></div>
+                              <p class="card-desc">The three nav rows (Audio / Advanced / App Sources) — currently only reachable via elastic overscroll, since three 34pt rows don't fill the available height yet.</p>
+                              <div class="tblwrap">
+                                <table>
+                                  <tr><th>Property</th><th>Value</th></tr>
+                                  <tr><td class="param">style</td><td><code>.sourceList</code></td></tr>
+                                  <tr><td class="param">headerView</td><td><code>nil</code></td></tr>
+                                  <tr><td class="param">backgroundColor</td><td><code>.clear</code></td></tr>
+                                  <tr><td class="param">intercellSpacing</td><td><span class="num">(0, 4)</span></td></tr>
+                                  <tr><td class="param">autoresizingMask</td><td><code>[.width, .height]</code></td></tr>
+                                  <tr><td class="param">columnAutoresizingStyle</td><td><code>.uniformColumnAutoresizingStyle</code></td></tr>
+                                  <tr><td class="param">row height (delegate)</td><td><span class="num">34pt</span></td></tr>
+                                  <tr><td class="param">rowView (delegate)</td><td>custom <code>NSTableRowView</code> subclass — see below</td></tr>
+                                </table>
+                              </div>
+                            </div>
+
+                            <div class="children">
+                              <div class="node">
+                                <div class="card">
+                                  <div class="card-head"><span class="card-title">NSTableRowView subclass</span></div>
+                                  <p class="card-desc">Draws nothing in <code>drawBackground(in:)</code> (transparent, lets sidebar glass show through) and paints a custom rounded selection pill in <code>drawSelection(in:)</code> — 8pt horizontal inset, 6pt corner radius, <code>.controlAccentColor</code> when key / <code>.unemphasizedSelectedContentBackgroundColor</code> otherwise.</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+              <!-- END SIDEBAR BRANCH -->
+
+              <!-- CONTENT BRANCH -->
+              <div class="node">
+                <div class="card">
+                  <div class="card-head">
+                    <span class="card-title">NSSplitViewItem <span style="color:var(--text-dimmer)">(content)</span></span>
+                    <span class="badge ok">blur works</span>
+                  </div>
+                  <p class="card-desc">Created via plain <code>NSSplitViewItem(viewController:)</code> — <code>behavior = .default</code>. This is the reference implementation: identical accessory technique, and it renders correctly.</p>
+                  <div class="tblwrap">
+                    <table>
+                      <tr><th>Property</th><th>Value</th></tr>
+                      <tr><td class="param">allowsFullHeightLayout</td><td><code>true</code></td></tr>
+                      <tr><td class="param">automaticallyAdjustsSafeAreaInsets</td><td><code>true</code></td></tr>
+                      <tr><td class="param">topAlignedAccessoryViewControllers</td><td><code>[scrollEdgeEffectAccessory]</code></td></tr>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="children">
+                  <div class="node">
+                    <div class="card">
+                      <div class="card-head">
+                        <span class="card-title">NSSplitViewItemAccessoryViewController</span>
+                        <span class="badge ok">blur works</span>
+                      </div>
+                      <p class="card-desc">Same construction as the sidebar's accessory, byte-for-byte, aside from the height constant.</p>
+                      <div class="tblwrap">
+                        <table>
+                          <tr><th>Property</th><th>Value</th></tr>
+                          <tr><td class="param">view</td><td>plain <code>NSView</code>, height-constrained only</td></tr>
+                          <tr><td class="param">view height constraint</td><td><span class="num">2pt</span></td></tr>
+                          <tr><td class="param">automaticallyAppliesContentInsets</td><td><code>false</code></td></tr>
+                          <tr><td class="param">preferredScrollEdgeEffectStyle</td><td><code>.soft</code></td></tr>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="node">
+                    <div class="card">
+                      <div class="card-head"><span class="card-title">NSViewController (tab container)</span></div>
+                      <p class="card-desc">Hosts whichever tab view controller is active (Audio / Advanced / App Sources), swapped in via <code>addSubview</code> + Auto Layout on selection change.</p>
+                    </div>
+
+                    <div class="children">
+                      <div class="node">
+                        <div class="card">
+                          <div class="card-head">
+                            <span class="card-title">NSScrollView <span style="color:var(--text-dimmer)">(App Sources tab)</span></span>
+                            <span class="badge ok">blur works</span>
+                          </div>
+                          <p class="card-desc">The one tab with enough content to scroll under normal conditions — confirmed getting the soft blur/fade as content passes behind the toolbar.</p>
+                          <div class="tblwrap">
+                            <table>
+                              <tr><th>Property</th><th>Value</th></tr>
+                              <tr><td class="param">hasVerticalScroller</td><td><code>true</code></td></tr>
+                              <tr><td class="param">horizontalScrollElasticity</td><td><code>.none</code></td></tr>
+                              <tr><td class="param">drawsBackground</td><td><code>false</code></td></tr>
+                              <tr><td class="param">borderType</td><td><code>.noBorder</code></td></tr>
+                              <tr><td class="param">automaticallyAdjustsContentInsets</td><td><code>true</code></td></tr>
+                              <tr><td class="param">topAnchor</td><td>pinned to <code>view.topAnchor</code> — full bleed, same technique as the sidebar's scroll view</td></tr>
+                              <tr><td class="param">leadingAnchor</td><td>pinned to <code>view.safeAreaLayoutGuide.leadingAnchor</code> (clears the sidebar overlay)</td></tr>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- END CONTENT BRANCH -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="section-label">02 — Measured safe-area parity</p>
+    <h2>The accessory is correctly wired on both sides</h2>
+    <p>Captured via an internal diagnostics dump (window frame reads, <code>safeAreaInsets</code>, <code>contentInsets</code>) after opening the settings window:</p>
+    <div class="tblwrap">
+      <pre><code><span class="diag-line"><span class="k">contentViewController.view.safeAreaInsets</span> = <span class="v">top: 54, left: 168</span></span><span class="diag-line"><span class="k">scrollEdgeEffectAccessory.view.frame</span> (window coords) = <span class="v">(168, 358, 420, 2)</span></span><span class="diag-line"><span class="k">splitItem[0] (sidebar) .view.frame</span> = <span class="v">(0, 0, 160, 396)</span>  <span style="color:var(--text-dimmer)">/* window is 412pt tall — 16pt shorter: the floating-card margin */</span></span><span class="diag-line"><span class="k">splitItem[0] (sidebar) .view.safeAreaInsets</span> = <span class="v">top: 46</span></span><span class="diag-line"><span class="k">sidebarScrollEdgeEffectAccessory.view.frame</span> (window coords) = <span class="v">(8, 358, 160, 2)</span></span><span class="diag-line"><span class="k">sidebarScrollView.contentInsets</span> = <span class="v">top: 46</span></span></code></pre>
+    </div>
+    <p style="margin-top:14px;">
+      8pt floating-card margin + 46pt safe-area = <strong style="color:var(--text)">54pt</strong> —
+      exactly matching the content pane's 52pt toolbar height + 2pt accessory = <strong style="color:var(--text)">54pt</strong>.
+      The accessory is correctly attached, correctly sized, and correctly contributing to the
+      safe-area calculation on the sidebar side. Only the actual blur <em>compositing</em> fails
+      to render.
+    </p>
+  </section>
+
+  <section>
+    <p class="section-label">03 — Experiment log</p>
+    <h2>Three isolated on-device tests, ruling out configuration</h2>
+    <div class="tblwrap">
+      <table>
+        <tr><th>Change</th><th>Result</th><th>Rules out</th></tr>
+        <tr>
+          <td class="param">Accessory height 2pt → 20pt</td>
+          <td>Resting position of nav rows pushed down further. Blur: still absent at any height.</td>
+          <td>"Blur zone too thin to notice"</td>
+        </tr>
+        <tr>
+          <td class="param"><code>sidebarItem.allowsFullHeightLayout</code> true → false <em>(reverted after test)</em></td>
+          <td>Broke the <em>content</em> pane's blur entirely and moved the window title from centered-over-content to docked beside the traffic lights — proving this is a window-wide unified-toolbar switch, not a sidebar-local "floating card" toggle. Sidebar still showed no blur even when flush.</td>
+          <td>"Floating-overlay style vs. flush pane" as the differentiator</td>
+        </tr>
+        <tr>
+          <td class="param"><code>sidebarItem.automaticallyAdjustsSafeAreaInsets</code> false → true <em>(reverted after test)</em></td>
+          <td>No visible change of any kind.</td>
+          <td>Missing cross-item safe-area opt-in</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <p class="section-label">04 — Relevant header doc comments</p>
+    <h2>Quoted directly from the macOS 26.5 SDK</h2>
+    <div class="quote">
+      The split view item accessory's preferred effect for content scrolling behind it. To allow
+      for a soft edge on the interior edge of a titlebar accessory:<br>
+      <code>splitViewItemAccessoryViewController.preferredScrollEdgeEffectStyle = NSScrollEdgeEffectStyle.softStyle;</code>
+      <cite>NSSplitViewItemAccessoryViewController.h</cite>
+    </div>
+    <div class="quote">
+      When YES, other items such as sidebars or inspectors may appear overlaid on top of this
+      item's viewController and this item's safeAreaInsets will be adjusted with respect to
+      overlaid content. Defaults to NO.
+      <cite>NSSplitViewItem.h — automaticallyAdjustsSafeAreaInsets</cite>
+    </div>
+    <p>
+      Neither header, nor the WWDC25 session "Build an AppKit app with the new design" (session 310),
+      documents any distinction in scroll-edge-effect behavior between <code>.sidebar</code> and
+      <code>.default</code>-behavior split items — the feature is introduced generically as applying
+      to "toolbar items, titlebar accessories, and split item accessories" alike.
+    </p>
+  </section>
+
+  <section>
+    <p class="section-label">05 — Official reference</p>
+    <h2>WWDC25 session 310 — "Build an AppKit app with the new design"</h2>
+    <p>
+      <a href="https://developer.apple.com/videos/play/wwdc2025/310/" target="_blank" rel="noopener">developer.apple.com/videos/play/wwdc2025/310/</a>
+      — the scroll-edge effect segment starts at
+      <a href="https://developer.apple.com/videos/play/wwdc2025/310/?time=567" target="_blank" rel="noopener">9:27</a>;
+      the split-item-accessory specifics are at 10:01.
+    </p>
+    <div class="quote">
+      For scrollable content, the scroll edge effect lives inside NSScrollView. The scroll view varies
+      the size and shape of the effect based on the content floating above it. The effect adapts
+      automatically as floating elements come and go. The scroll edge effect is applied automatically
+      underneath toolbar items, titlebar accessories, and a new type of accessory, split item
+      accessories. Split item accessories are very similar to titlebar accessories, except they only
+      span one split within a split view controller, and they can be placed at either the top or
+      bottom edge of the split. To add a split item accessory, create a
+      NSSplitViewItemAccessoryViewController, and attach it to the split view item using the
+      addTopAligned- or addBottomAlignedAccessoryViewController method.
+      <cite>WWDC25 session 310, transcript at 10:01</cite>
+    </div>
+    <p>
+      Nothing in this passage — or the rest of the session — distinguishes <code>.sidebar</code>-behavior
+      split items from <code>.default</code> ones. The wording ("a new type of accessory... they only span
+      one split within a split view controller") reads as fully generic to any split, which is the basis
+      for the question below.
+    </p>
+  </section>
+
+  <section>
+    <p class="section-label">06 — The question</p>
+    <div class="question-box">
+      <p>
+        Is the Tahoe scroll-edge-effect (<code>NSSplitViewItemAccessoryViewController.preferredScrollEdgeEffectStyle</code>)
+        expected to work for a <code>.sidebar</code>-behavior <code>NSSplitViewItem</code>, or is this
+        API currently scoped to non-sidebar split items only?
+      </p>
+      <p>
+        Every measurement above shows the sidebar receiving the exact same safe-area contribution as
+        the content pane (54pt either way), and the identical accessory construction that produces a
+        visible blur on the content side produces none on the sidebar side. Has anyone gotten the
+        soft-edge blur to render for a <code>.sidebar</code>-behavior split item specifically — and if
+        so, what differed from the setup above?
+      </p>
+      <p>
+        Regardless, how exactly does Apple implement the sidebar blur then? Regardless of the MacOS app
+        you open, you'll see the sidebar tabs blurred as they are scrolled behind the Traffic Light buttons.
+        MacOS Built-In apps that have this effect include:
+      </p>
+      <ul class="app-list">
+        <li>Notes.app</li>
+        <li>Mail.app</li>
+        <li>Finder.app</li>
+        <li>System Settings.app</li>
+        <li>Music.app</li>
+        <li>Others I haven't explicitly mentioned here</li>
+      </ul>
+      <p>
+        My intent is to replicate very much the same effect they have done. If I've been able to successfully
+        implement it on the content side (right of sidebar), then I'd expect it should also be possible on the
+        sidebar side as well.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    NativeAudioRouter — Settings window · macOS 26.5.1 · Swift 6.3.2 · reference doc for forum posting, not for public distribution
+  </footer>
+
+</div>
+
+</body>
+</html>
