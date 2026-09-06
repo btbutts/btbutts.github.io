@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '>=3.14'
 
-      - name: Run sync script
+      - name: Run subnet check script
         run: python scripts/subnet_check.py
 
       - name: Commit and push if changed
