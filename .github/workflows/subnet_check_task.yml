@@ -1,0 +1,37 @@
+name: Sync AWS Subnets (Python)
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-subnets:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run sync script
+        run: python scripts/sync_subnets.py
+
+      - name: Commit and push if changed
+        run: |
+          if git status --porcelain | grep -q 'resources/aws_subnets/global_aws_subnets.json'; then
+            git config --local user.name "github-actions[bot]"
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git add resources/aws_subnets/global_aws_subnets.json
+            git commit -m "chore: sync aws subnets [skip ci]"
+            git push
+          else
+            echo "Working tree clean. No commit required."
+          fi
+
