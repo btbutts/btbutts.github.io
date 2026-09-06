@@ -4,7 +4,7 @@ from pathlib import Path
 import urllib.request
 
 REMOTE_URL = "https://ip-ranges.amazonaws.com/ip-ranges.json"
-TARGET_PATH = Path("resources/aws_subnets/global_aws_subnets.json")
+TARGET_PATH = Path("../resources/aws_subnets/global_aws_subnets.json")
 
 def get_file_sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
