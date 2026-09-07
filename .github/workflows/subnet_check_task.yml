@@ -37,6 +37,14 @@ jobs:
         if: steps.subnet_check.outputs.awsSubnetsHaveChanged == 'true'
         run: python scripts/summarize_subnets.py resources/aws_subnets/global_aws_subnets.json aws_subnets.txt
 
+      - name: Filter LG AWS Subnets
+        if: steps.subnet_check.outputs.awsSubnetsHaveChanged == 'true'
+        run: python scripts/filter_lg_aws_subnets.py
+
+      - name: Summarize CIDRs to LG AWS IPv4 and IPv6 txt files
+        if: steps.subnet_check.outputs.awsSubnetsHaveChanged == 'true'
+        run: python scripts/summarize_subnets.py resources/aws_subnets/lg/lg_aws_subnets.json lg_subnets.txt
+
       - name: Commit and push if changed
         run: |
           if git status --porcelain | grep -q 'resources/aws_subnets/global_aws_subnets.json'; then

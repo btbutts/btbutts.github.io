@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 
-MAX_LINES_PER_SEGMENT = 250
+MAX_LINES_PER_SEGMENT = 600
 
 def generate_output_paths(supplied_path: Path) -> tuple[Path, Path]:
     """Appends '_ipv4' and '_ipv6' to the file name stem of a given Path."""
