@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pages: write
 
     steps:
       - name: Checkout repository
@@ -42,3 +43,11 @@ jobs:
             echo "Working tree clean. No commit required."
           fi
 
+      - name: Trigger GitHub Pages rebuild
+        if: steps.subnet_check.outputs.awsSubnetsHaveChanged == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/pages/builds
