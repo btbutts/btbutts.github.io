@@ -26,7 +26,7 @@ jobs:
 
       - name: Summarize CIDRs to AWS IPv4 and IPv6 txt files
         if: steps.subnet_check.outputs.awsSubnetsHaveChanged == 'true'
-        run: python scripts/subnet_check.py resources/aws_subnets/global_aws_subnets.json aws_subnets.txt
+        run: python scripts/summarize_subnets.py resources/aws_subnets/global_aws_subnets.json aws_subnets.txt
 
       - name: Commit and push if changed
         run: |
