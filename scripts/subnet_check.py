@@ -18,9 +18,11 @@ AWS_SUBNET_PATH = (
 )
 
 def get_file_sha256(data: bytes) -> str:
+    """"Get SHA256 hash"""
     return hashlib.sha256(data).hexdigest()
 
 def main():
+    """Main worker"""
     # 1. Fetch remote content
     print("Retrieving latest AWS IP ranges...")
     req = urllib.request.Request(AWS_SUBNET_URL, headers={"User-Agent": "Mozilla/5.0"})
@@ -46,7 +48,7 @@ def main():
     AWS_SUBNET_PATH.parent.mkdir(parents=True, exist_ok=True)
     AWS_SUBNET_PATH.write_bytes(remote_data)
     print("File updated successfully.")
-    
+
     # Notify GitHub Actions that changes were made
     github_actions_notify = os.getenv("GITHUB_OUTPUT")
     if github_actions_notify:
@@ -55,4 +57,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

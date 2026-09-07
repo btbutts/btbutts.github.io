@@ -21,6 +21,7 @@ jobs:
           python-version: '>=3.14'
 
       - name: Run subnet check script
+        id: subnet_check
         run: python scripts/subnet_check.py
 
       - name: Summarize CIDRs to AWS IPv4 and IPv6 txt files
