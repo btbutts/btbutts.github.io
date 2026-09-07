@@ -3,6 +3,7 @@
 """Script to validate aws global subnets for changes and modify if needed"""
 
 import hashlib
+import os
 import sys
 import urllib.request
 from pathlib import Path
@@ -45,6 +46,12 @@ def main():
     AWS_SUBNET_PATH.parent.mkdir(parents=True, exist_ok=True)
     AWS_SUBNET_PATH.write_bytes(remote_data)
     print("File updated successfully.")
+    
+    # Notify GitHub Actions that changes were made
+    github_actions_notify = os.getenv("GITHUB_OUTPUT")
+    if github_actions_notify:
+        with open(github_actions_notify, mode="a", encoding="utf-8") as output:
+            output.write("awsSubnetsHaveChanged=true\n")
 
 if __name__ == "__main__":
     main()
