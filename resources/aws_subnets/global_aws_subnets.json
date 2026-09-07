@@ -14,6 +14,8 @@
       "service": "AMAZON",
       "network_border_group": "ap-northeast-2"
     },
+
+
     {
       "ip_prefix": "15.190.244.0/22",
       "region": "ap-east-2",
