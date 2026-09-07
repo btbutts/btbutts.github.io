@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
+  push:
+    branches: ["dev"]
 
 jobs:
   sync-subnets:
@@ -11,6 +13,12 @@ jobs:
     permissions:
       contents: write
       pages: write
+      id-token: write
+    
+    # Avoid concurrent deployments overwriting one another
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
 
     steps:
       - name: Checkout repository
@@ -46,9 +54,11 @@ jobs:
 
       - name: Trigger GitHub Pages rebuild
         if: steps.subnet_check.outputs.awsSubnetsHaveChanged == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api --method POST \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/pages/builds
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        if: steps.subnet_check.outputs.awsSubnetsHaveChanged == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
