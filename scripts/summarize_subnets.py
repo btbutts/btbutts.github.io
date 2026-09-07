@@ -16,13 +16,14 @@ def generate_output_paths(supplied_path: Path) -> tuple[Path, Path]:
     return ipv4_path, ipv6_path
 
 def summarize_cidrs(input_path: Path, ipv4_output_path: Path, ipv6_output_path: Path) -> None:
+    """Summarize CIDRs into collapsed IPv4 and IPv6 lists"""
     ipv4_cidrs = []
     ipv6_cidrs = []
 
     # Load and parse the AWS IP ranges JSON
     with open(input_path, mode='r', encoding="utf-8") as json_file:
         subnet_data = json.load(json_file)
-        
+
     # Extract IPv4 CIDRs
     for entry in subnet_data.get("prefixes", []):
         ipv4_cidr_string = entry.get("ip_prefix")
@@ -31,7 +32,7 @@ def summarize_cidrs(input_path: Path, ipv4_output_path: Path, ipv6_output_path: 
                 ipv4_cidrs.append(ipaddress.ip_network(ipv4_cidr_string))
             except ValueError as error:
                 print(f"Skipping invalid IPv4 CIDR: {ipv4_cidr_string} ({error})", file=sys.stderr)
-    
+
     # Extract IPv6 CIDRs
     for entry in subnet_data.get("ipv6_prefixes", []):
         ipv6_cidr_string = entry.get("ipv6_prefix")
@@ -40,12 +41,12 @@ def summarize_cidrs(input_path: Path, ipv4_output_path: Path, ipv6_output_path: 
                 ipv6_cidrs.append(ipaddress.ip_network(ipv6_cidr_string))
             except ValueError as error:
                 print(f"Skipping invalid IPv6 CIDR: {ipv6_cidr_string} ({error})", file=sys.stderr)
-    
+
     # Collapse networks independently
     # (collapse_addresses cannot mix v4 and v6)
     collapsed_ipv4 = list(ipaddress.collapse_addresses(ipv4_cidrs))
     collapsed_ipv6 = list(ipaddress.collapse_addresses(ipv6_cidrs))
-    
+
     # Output summarized IPv4 & IPv6 CIDRs
     with open(ipv4_output_path, mode="w", encoding="utf-8") as ipv4_file:
         ipv4_file.writelines(f"{network}\n" for network in collapsed_ipv4)
@@ -55,8 +56,8 @@ def summarize_cidrs(input_path: Path, ipv4_output_path: Path, ipv6_output_path: 
     # Summarization Analysis
     total_cidr_count = len(ipv4_cidrs) + len(ipv6_cidrs)
     total_collapsed_cidrs = len(collapsed_ipv4) + len(collapsed_ipv6)
-    reduction_percentage = ((total_cidr_count - total_collapsed_cidrs) / total_cidr_count) * 100 
-    
+    reduction_percentage = ((total_cidr_count - total_collapsed_cidrs) / total_cidr_count) * 100
+
     print(f"Original entries:   {total_cidr_count:,}")
     print(f"Summarized entries: {total_collapsed_cidrs:,}")
     print(f"Reduction:          {reduction_percentage:.1f}%")
